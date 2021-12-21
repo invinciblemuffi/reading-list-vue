@@ -1,5 +1,22 @@
 <template>
   <h2>Add a new Resource to your Reading List</h2>
+  <base-dialog
+    v-if="inputIsInvalid"
+    title="Invalid Input"
+    @close="confirmError"
+  >
+    <!-- Unnamed slots can be referred by default keyword -->
+    <template #default>
+      <p>Unfortunately, one of the input fields is empty.</p>
+      <p>
+        Please check all input fields and make sure all fields have appropriate
+        values.
+      </p>
+    </template>
+    <template #actions>
+      <base-button @click="confirmError">Okay</base-button>
+    </template>
+  </base-dialog>
   <base-card>
     <form @submit.prevent="submitData">
       <div class="form-control">
@@ -29,11 +46,25 @@
 <script>
 export default {
   inject: ["addResource"],
+  data() {
+    return {
+      inputIsInvalid: false,
+    };
+  },
   methods: {
     submitData() {
       const enteredTitle = this.$refs.titleInput.value;
       const enteredDesc = this.$refs.descInput.value;
       const enteredLink = this.$refs.linkInput.value;
+
+      if (
+        enteredTitle.trim() === "" ||
+        enteredDesc.trim() === "" ||
+        enteredLink.trim() === ""
+      ) {
+        this.inputIsInvalid = true;
+        return;
+      }
 
       const newResource = {
         id: new Date().toISOString(),
@@ -42,6 +73,13 @@ export default {
         link: enteredLink,
       };
       this.addResource(newResource);
+      // Clearing out input fields
+      this.$refs.titleInput.value = "";
+      this.$refs.descInput.value = "";
+      this.$refs.linkInput.value = "";
+    },
+    confirmError() {
+      this.inputIsInvalid = false;
     },
   },
 };
