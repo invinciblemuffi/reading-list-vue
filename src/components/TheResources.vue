@@ -33,11 +33,8 @@
       @close="reloadComponent"
     >
       <template #default>
-        <p>We were unable to get your data.</p>
-        <p>
-          Let me try once again to get the data, please close this window and
-          wait a moment!
-        </p>
+        <p>A server error occured on our end!</p>
+        <p>Please wait for a few seconds and try again.</p>
       </template>
     </base-dialog>
   </teleport>
@@ -59,11 +56,20 @@ export default {
       const resp = await this.$http.get(
         "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
       );
+      console.log(resp);
       // Only resp will do null and undefined check
       if (resp && Object.keys(resp).length === 0) {
         return (this.serverError = true);
       } else {
-        this.storedResources.unshift(...Object.values(resp.data));
+        for (let key in resp.data) {
+          let title = resp.data[key].title;
+          let desc = resp.data[key].description;
+          let link = resp.data[key].link;
+          // console.log(key, title, desc, link);
+          let serverData = { id: key, title, description: desc, link };
+          this.storedResources.unshift(serverData);
+        }
+        // this.storedResources.unshift(...Object.values(resp.data));
         console.log(this.storedResources);
         this.serverError = false;
         // this.storedResources.splice(0, this.storedResources.length);
@@ -121,11 +127,25 @@ export default {
       this.storedResources.unshift(newResource);
       this.selectedTab = "stored-reading-list";
     },
-    removeResource(resId) {
-      const itemToRemoveId = this.storedResources.findIndex(
-        (res) => res.id === resId
-      );
-      this.storedResources.splice(itemToRemoveId, 1);
+    async removeResource(resId) {
+      try {
+        const itemToRemove = this.storedResources.find(
+          (res) => res.id === resId
+        );
+        console.log(itemToRemove);
+        const resp = await this.$http.delete(
+          `https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources/${itemToRemove.id}.json`
+        );
+        if (resp.status === 200) {
+          this.serverError = false;
+          this.storedResources.splice(itemToRemove.id, 1);
+        } else {
+          this.serverError = true;
+        }
+      } catch (error) {
+        this.serverError = true;
+        console.log(error.message);
+      }
     },
     reloadComponent() {
       this.serverError = false;

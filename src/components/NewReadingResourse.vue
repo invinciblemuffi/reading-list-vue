@@ -86,6 +86,7 @@ export default {
         );
         console.log(resp);
         if (resp.status === 200) {
+          // Switch back to Reading Resource List and show the new object as well
           this.addResource(newResource);
         } else {
           throw new Error("Please try to add your resource again");

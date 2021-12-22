@@ -1,5 +1,5 @@
 <template>
-  <li>
+  <li :id="id">
     <base-card>
       <header>
         <h3>{{ title }}</h3>
