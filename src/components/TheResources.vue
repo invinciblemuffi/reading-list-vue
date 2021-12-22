@@ -18,6 +18,21 @@
   <!-- We can use v-if to switch between the child components 
   imported here based on selectedTab value, 
   but dynamic component tag works too here -->
+  <teleport to="body">
+    <base-dialog
+      v-if="serverError"
+      title="Oops, Sorry!"
+      @close="reloadComponent"
+    >
+      <template #default>
+        <p>We were unable to get your data.</p>
+        <p>
+          Let me try once again to get the data, please close this window and
+          wait a moment!
+        </p>
+      </template>
+    </base-dialog>
+  </teleport>
 </template>
 
 <script>
@@ -30,24 +45,27 @@ export default {
     NewReadingResource,
   },
   async mounted() {
-    const readingResourcesJSON = await this.$http.get(
+    // this.$http points to Axios which is cofigured in main.js file so that entire Vue App can use it globally
+    const resp = await this.$http.get(
       "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
     );
-    // console.dir(data);
-    this.readingResourcesServer = await readingResourcesJSON.data;
-    this.storedResources.unshift(...Object.values(this.readingResourcesServer));
-    // console.log(Object.values(this.readingResourcesServer));
+    // Only resp will do null and undefined check
+    if (resp && Object.keys(resp).length === 0) {
+      return (this.serverError = true);
+    }
+    this.storedResources.unshift(...Object.values(resp.data));
     console.log(this.storedResources);
+    this.serverError = false;
   },
   data() {
     return {
-      readingResourcesServer: [],
+      serverError: false,
       selectedTab: "stored-reading-list",
       storedResources: [
         {
           id: "official-guide",
-          title: "Become a Google Expert",
-          description: "Learn how to Google",
+          title: "Become a Google Search Expert",
+          description: "Learn how to search in Google",
           link: "https://google.com",
         },
         {
@@ -80,8 +98,6 @@ export default {
   methods: {
     setSelectedTab(tabName) {
       this.selectedTab = tabName;
-      /* if (this.selectedTab === "stored-reading-list") {
-      } */
     },
     addResource(newResource) {
       this.storedResources.unshift(newResource);
@@ -92,6 +108,9 @@ export default {
         (res) => res.id === resId
       );
       this.storedResources.splice(itemToRemoveId, 1);
+    },
+    reloadComponent() {
+      this.serverError = true;
     },
   },
 };
