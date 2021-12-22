@@ -29,8 +29,19 @@ export default {
     StoredReadingList,
     NewReadingResource,
   },
+  async mounted() {
+    const readingResourcesJSON = await this.$http.get(
+      "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
+    );
+    // console.dir(data);
+    this.readingResourcesServer = await readingResourcesJSON.data;
+    this.storedResources.unshift(...Object.values(this.readingResourcesServer));
+    // console.log(Object.values(this.readingResourcesServer));
+    console.log(this.storedResources);
+  },
   data() {
     return {
+      readingResourcesServer: [],
       selectedTab: "stored-reading-list",
       storedResources: [
         {
@@ -69,6 +80,8 @@ export default {
   methods: {
     setSelectedTab(tabName) {
       this.selectedTab = tabName;
+      /* if (this.selectedTab === "stored-reading-list") {
+      } */
     },
     addResource(newResource) {
       this.storedResources.unshift(newResource);

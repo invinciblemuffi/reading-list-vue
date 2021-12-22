@@ -52,7 +52,7 @@ export default {
     };
   },
   methods: {
-    submitData() {
+    async submitData() {
       const enteredTitle = this.$refs.titleInput.value;
       const enteredDesc = this.$refs.descInput.value;
       const enteredLink = this.$refs.linkInput.value;
@@ -73,6 +73,13 @@ export default {
         link: enteredLink,
       };
       this.addResource(newResource);
+
+      // ReadingResource.json is added as it's a requirement for using firebase database
+      const resp = await this.$http.post(
+        "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json",
+        newResource
+      );
+      console.log(resp);
       // Clearing out input fields
       this.$refs.titleInput.value = "";
       this.$refs.descInput.value = "";
