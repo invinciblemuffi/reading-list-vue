@@ -77,7 +77,6 @@ export default {
         link: enteredLink,
       };
       console.dir(newResource);
-      // this.addResource(newResource);
       try {
         this.isError = false;
         // ReadingResource.json is added as it's a requirement for using firebase database
@@ -86,7 +85,11 @@ export default {
           newResource
         );
         console.log(resp);
-
+        if (resp.status === 200) {
+          this.addResource(newResource);
+        } else {
+          throw new Error("Please try to add your resource again");
+        }
         // Clearing out input fields
         this.$refs.titleInput.value = "";
         this.$refs.descInput.value = "";
