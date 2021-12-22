@@ -11,8 +11,16 @@
       >Add Resource</base-button
     >
   </base-card>
+  <h2 v-if="isLoading">Loading...</h2>
+  <h2
+    v-else-if="!isLoading && (!storedResources || storedResources.length === 0)"
+  >
+    Please add some Reading Resources to your List
+  </h2>
   <!-- Dynamic Component rendering based on selectedTab value - component tag from Vue -->
-  <keep-alive>
+  <keep-alive
+    v-else-if="!isLoading && storedResources && storedResources.length > 0"
+  >
     <component :is="selectedTab"></component>
   </keep-alive>
   <!-- We can use v-if to switch between the child components 
@@ -45,6 +53,7 @@ export default {
     NewReadingResource,
   },
   async mounted() {
+    this.isLoading = true;
     // this.$http points to Axios which is cofigured in main.js file so that entire Vue App can use it globally
     const resp = await this.$http.get(
       "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
@@ -52,14 +61,18 @@ export default {
     // Only resp will do null and undefined check
     if (resp && Object.keys(resp).length === 0) {
       return (this.serverError = true);
+    } else {
+      this.storedResources.unshift(...Object.values(resp.data));
+      console.log(this.storedResources);
+      this.serverError = false;
+      // this.storedResources.splice(0, this.storedResources.length);
+      this.isLoading = false;
     }
-    this.storedResources.unshift(...Object.values(resp.data));
-    console.log(this.storedResources);
-    this.serverError = false;
   },
   data() {
     return {
       serverError: false,
+      isLoading: false,
       selectedTab: "stored-reading-list",
       storedResources: [
         {
