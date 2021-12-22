@@ -18,6 +18,9 @@
     </template>
   </base-dialog>
   <base-card>
+    <h3 v-if="isError">
+      Sorry, Something went wrong, please try to save your resource again!
+    </h3>
     <form @submit.prevent="submitData">
       <div class="form-control">
         <label for="title">Title</label>
@@ -49,6 +52,7 @@ export default {
   data() {
     return {
       inputIsInvalid: false,
+      isError: false,
     };
   },
   methods: {
@@ -72,18 +76,25 @@ export default {
         description: enteredDesc,
         link: enteredLink,
       };
-      this.addResource(newResource);
+      console.dir(newResource);
+      // this.addResource(newResource);
+      try {
+        this.isError = false;
+        // ReadingResource.json is added as it's a requirement for using firebase database
+        const resp = await this.$http.post(
+          "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json",
+          newResource
+        );
+        console.log(resp);
 
-      // ReadingResource.json is added as it's a requirement for using firebase database
-      const resp = await this.$http.post(
-        "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json",
-        newResource
-      );
-      console.log(resp);
-      // Clearing out input fields
-      this.$refs.titleInput.value = "";
-      this.$refs.descInput.value = "";
-      this.$refs.linkInput.value = "";
+        // Clearing out input fields
+        this.$refs.titleInput.value = "";
+        this.$refs.descInput.value = "";
+        this.$refs.linkInput.value = "";
+      } catch (error) {
+        this.isError = true;
+        console.log(error.message);
+      }
     },
     confirmError() {
       this.inputIsInvalid = false;

@@ -53,20 +53,25 @@ export default {
     NewReadingResource,
   },
   async mounted() {
-    this.isLoading = true;
-    // this.$http points to Axios which is cofigured in main.js file so that entire Vue App can use it globally
-    const resp = await this.$http.get(
-      "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
-    );
-    // Only resp will do null and undefined check
-    if (resp && Object.keys(resp).length === 0) {
-      return (this.serverError = true);
-    } else {
-      this.storedResources.unshift(...Object.values(resp.data));
-      console.log(this.storedResources);
-      this.serverError = false;
-      // this.storedResources.splice(0, this.storedResources.length);
-      this.isLoading = false;
+    try {
+      this.isLoading = true;
+      // this.$http points to Axios which is cofigured in main.js file so that entire Vue App can use it globally
+      const resp = await this.$http.get(
+        "https://reading-list-app-f65aa-default-rtdb.asia-southeast1.firebasedatabase.app/ReadingResources.json"
+      );
+      // Only resp will do null and undefined check
+      if (resp && Object.keys(resp).length === 0) {
+        return (this.serverError = true);
+      } else {
+        this.storedResources.unshift(...Object.values(resp.data));
+        console.log(this.storedResources);
+        this.serverError = false;
+        // this.storedResources.splice(0, this.storedResources.length);
+        this.isLoading = false;
+      }
+    } catch (error) {
+      // Handling Server errors where
+      this.serverError = true;
     }
   },
   data() {
@@ -123,7 +128,7 @@ export default {
       this.storedResources.splice(itemToRemoveId, 1);
     },
     reloadComponent() {
-      this.serverError = true;
+      this.serverError = false;
     },
   },
 };
